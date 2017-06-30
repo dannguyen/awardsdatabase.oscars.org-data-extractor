@@ -92,3 +92,47 @@ These files consist of *nearly-raw HTML* from the search results at [http://awar
   - Raw sample HTML: [data/raw/awardsdatabase.oscars.org/sample-nominees.html](data/raw/awardsdatabase.oscars.org/sample-nominees.html)
   - Raw full HTML: [data/raw/awardsdatabase.oscars.org/nominees.html](data/raw/awardsdatabase.oscars.org/nominees.html)
 
+
+
+## Wikidata
+
+This looks promising:
+
+```sql
+#added before 2016-10
+SELECT ?human ?humanLabel ?awardEditionLabel ?awardLabel ?awardWork ?awardWorkLabel ?director ?directorLabel ?time 
+WHERE 
+{
+  {
+    SELECT (SAMPLE(?human) AS ?human) ?award ?awardWork (SAMPLE(?director) AS ?director) (SAMPLE(?awardEdition) AS ?awardEdition) (SAMPLE(?time) AS ?time) WHERE {
+      ?award wdt:P31 wd:Q19020 .      # All items that are instance of(P31) of Academy awards (Q19020)
+      {
+        ?human p:P166 ?awardStat .              # Humans with an awarded(P166) statement
+        ?awardStat ps:P166 ?award .        # ... that has any of the values of ?award
+        ?awardStat pq:P805 ?awardEdition . # Get the award edition (which is "subject of" XXth Academy Awards)
+        ?awardStat pq:P1686 ?awardWork . # The work they have been awarded for
+        ?human wdt:P31 wd:Q5 .        # Humans
+      } UNION {
+        ?awardWork wdt:P31 wd:Q11424 . # Films
+        ?awardWork p:P166 ?awardStat . # ... with an awarded(P166) statement
+        ?awardStat ps:P166 ?award .        # ... that has any of the values of ?award
+        ?awardStat pq:P805 ?awardEdition . # Get the award edition (which is "subject of" XXth Academy Awards)
+      }
+      OPTIONAL {
+        ?awardEdition wdt:P585 ?time . # the "point of time" of the Academy Award
+        ?awardWork wdt:P57 ?director .
+      }
+    }
+    GROUP BY ?awardWork ?award # We only want every movie once for a category (a 'random' person is selected)
+  }
+
+  SERVICE wikibase:label {            # ... include the labels
+    bd:serviceParam wikibase:language "en" .
+  }
+}
+ORDER BY DESC(?time)
+```
+
+
+https://query.wikidata.org/#%23added%20before%202016-10%0ASELECT%20%3Fhuman%20%3FhumanLabel%20%3FawardEditionLabel%20%3FawardLabel%20%3FawardWork%20%3FawardWorkLabel%20%3Fdirector%20%3FdirectorLabel%20%3Ftime%20%0AWHERE%20%0A%7B%0A%09%7B%0A%09%09SELECT%20%28SAMPLE%28%3Fhuman%29%20AS%20%3Fhuman%29%20%3Faward%20%3FawardWork%20%28SAMPLE%28%3Fdirector%29%20AS%20%3Fdirector%29%20%28SAMPLE%28%3FawardEdition%29%20AS%20%3FawardEdition%29%20%28SAMPLE%28%3Ftime%29%20AS%20%3Ftime%29%20WHERE%20%7B%0A%09%09%09%3Faward%20wdt%3AP31%20wd%3AQ19020%20.%09%09%09%23%20All%20items%20that%20are%20instance%20of%28P31%29%20of%20Academy%20awards%20%28Q19020%29%0A%09%09%09%7B%0A%09%09%09%09%3Fhuman%20p%3AP166%20%3FawardStat%20.%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Humans%20with%20an%20awarded%28P166%29%20statement%0A%09%09%09%09%3FawardStat%20ps%3AP166%20%3Faward%20.%20%20%20%20%20%09%20%23%20...%20that%20has%20any%20of%20the%20values%20of%20%3Faward%0A%09%09%09%09%3FawardStat%20pq%3AP805%20%3FawardEdition%20.%20%23%20Get%20the%20award%20edition%20%28which%20is%20%22subject%20of%22%20XXth%20Academy%20Awards%29%0A%09%09%09%09%3FawardStat%20pq%3AP1686%20%3FawardWork%20.%20%23%20The%20work%20they%20have%20been%20awarded%20for%0A%09%09%09%09%3Fhuman%20wdt%3AP31%20wd%3AQ5%20.%20%09%09%09%09%23%20Humans%0A%09%09%09%7D%20UNION%20%7B%0A%09%09%09%09%3FawardWork%20wdt%3AP31%20wd%3AQ11424%20.%20%23%20Films%0A%09%09%09%09%3FawardWork%20p%3AP166%20%3FawardStat%20.%20%23%20...%20with%20an%20awarded%28P166%29%20statement%0A%09%09%09%09%3FawardStat%20ps%3AP166%20%3Faward%20.%20%20%20%20%20%09%20%23%20...%20that%20has%20any%20of%20the%20values%20of%20%3Faward%0A%09%09%09%09%3FawardStat%20pq%3AP805%20%3FawardEdition%20.%20%23%20Get%20the%20award%20edition%20%28which%20is%20%22subject%20of%22%20XXth%20Academy%20Awards%29%0A%09%09%09%7D%0A%09%09%09OPTIONAL%20%7B%0A%09%09%09%09%3FawardEdition%20wdt%3AP585%20%3Ftime%20.%20%23%20the%20%22point%20of%20time%22%20of%20the%20Academy%20Award%0A%09%09%09%09%3FawardWork%20wdt%3AP57%20%3Fdirector%20.%0A%09%09%09%7D%0A%09%09%7D%0A%09%09GROUP%20BY%20%3FawardWork%20%3Faward%20%23%20We%20only%20want%20every%20movie%20once%20for%20a%20category%20%28a%20%27random%27%20person%20is%20selected%29%0A%09%7D%0A%0A%09SERVICE%20wikibase%3Alabel%20%7B%20%20%20%20%20%20%20%20%20%20%20%20%23%20...%20include%20the%20labels%0A%09%09bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22%20.%0A%09%7D%0A%7D%0AORDER%20BY%20DESC%28%3Ftime%29
+
