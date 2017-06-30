@@ -24,7 +24,7 @@ Here's some wrong assumptions you/I have about Oscar data:
 - There's only one person per category (back when there were fewer movies, such as 1928, actors could be nominated for several films)
 - There's always been the same number of nominees (Best Picture has recently expanded to include 10 nominees instead of the usual 5)
 - There's only one winner per category (nope, there can be multiple winners in the event of a tie, such as the 1932 Best Actor category)
-
+- No two award-winners have ever had the same first and last name (there's Will Smith, the best actor nominee, and William Craig Smith, nominated in 1982 for Art Direction)
 
 
 
