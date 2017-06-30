@@ -4,6 +4,14 @@ There doesn't appear to be a reliable or comprehensive, normalized source for th
 
 http://awardsdatabase.oscars.org/search/
 
+Example results when searching for the 2016 Academy Award winners and nominees:
+
+<a href="http://awardsdatabase.oscars.org/search/">
+  <img src="assets/images/example-search-results-2016-awards.png" alt="example-search-results-2016-awards.png">
+</a>
+
+
+
 This repo contains raw HTML, code (soon), and resulting data (hopefully). It turns out winning Oscars -- or at least how and *to whom* awards are awarded -- is more complicated than anticipated.
 
 Here's some wrong assumptions you/I have about Oscar data:
